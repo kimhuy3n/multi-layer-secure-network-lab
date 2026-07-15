@@ -1,0 +1,114 @@
+---
+- name: "LAYER SETUP - Ubuntu Server Hardening + Web Service"
+  hosts: ubuntu_servers
+  become: yes
+  vars:
+    allowed_ports: [22, 80, 443, 514]
+    fail2ban_maxretry: 3
+    fail2ban_bantime: 3600
+    fail2ban_findtime: 600
+
+  tasks:
+    - name: "[1/10] Cap nhat package"
+      apt: { update_cache: yes, cache_valid_time: 3600 }
+
+    - name: "[2/10] Upgrade packages"
+      apt: { upgrade: safe }
+
+    - name: "[3/10] Cai Apache + PHP"
+      apt:
+        name: [apache2, php, libapache2-mod-php]
+        state: present
+
+    - name: "[3.1] Tao web page"
+      copy:
+        content: |
+          <html><body>
+          <h1>DATN 2026 - Bao Mat Da Tang</h1>
+          <p>Protected by: FW + IDS/IPS + VPN + Host Security</p>
+          <p><?php echo date('Y-m-d H:i:s'); ?></p>
+          </body></html>
+        dest: /var/www/html/index.php
+
+    - name: "[3.2] Start Apache"
+      service: { name: apache2, state: started, enabled: yes }
+
+    - name: "[4/10] Cai fail2ban (Host IPS)"
+      apt: { name: fail2ban, state: present }
+
+    - name: "[4.1] Config fail2ban"
+      copy:
+        content: |
+          [DEFAULT]
+          bantime = {{ fail2ban_bantime }}
+          findtime = {{ fail2ban_findtime }}
+          maxretry = {{ fail2ban_maxretry }}
+          banaction = ufw
+          [sshd]
+          enabled = true
+          port = ssh
+          logpath = /var/log/auth.log
+          maxretry = {{ fail2ban_maxretry }}
+          [apache-auth]
+          enabled = true
+          port = http,https
+          logpath = /var/log/apache2/error.log
+          maxretry = 5
+        dest: /etc/fail2ban/jail.local
+      notify: restart fail2ban
+
+    - name: "[5/10] Cai UFW"
+      apt: { name: ufw, state: present }
+
+    - name: "[5.1] UFW deny incoming"
+      ufw: { direction: incoming, policy: deny }
+
+    - name: "[5.2] UFW allow outgoing"
+      ufw: { direction: outgoing, policy: allow }
+
+    - name: "[5.3] UFW open ports"
+      ufw: { rule: allow, port: "{{ item }}", proto: tcp }
+      loop: "{{ allowed_ports }}"
+
+    - name: "[5.4] UFW allow LAN"
+      ufw: { rule: allow, from_ip: "{{ lan_network }}" }
+
+    - name: "[5.5] UFW allow VPN"
+      ufw: { rule: allow, from_ip: "{{ vpn_network }}" }
+
+    - name: "[5.6] Enable UFW"
+      ufw: { state: enabled }
+
+    - name: "[6/10] Cai security tools"
+      apt:
+        name: [auditd, rkhunter, net-tools, tcpdump, rsyslog]
+        state: present
+
+    - name: "[7/10] SSH disable root"
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+      notify: restart sshd
+
+    - name: "[8/10] Syslog forward to pfSense"
+      lineinfile:
+        path: /etc/rsyslog.conf
+        line: "*.* @{{ lan_gateway }}:514"
+        insertafter: EOF
+      notify: restart rsyslog
+
+    - name: "[9/10] Start auditd"
+      service: { name: auditd, state: started, enabled: yes }
+
+    - name: "[10/10] Done"
+      debug:
+        msg: "=== srv-lan-01 READY: Web + fail2ban + UFW + Audit ==="
+
+  handlers:
+    - name: restart fail2ban
+      service: { name: fail2ban, state: restarted }
+    - name: restart sshd
+      service: { name: sshd, state: restarted }
+    - name: restart rsyslog
+      service: { name: rsyslog, state: restarted }

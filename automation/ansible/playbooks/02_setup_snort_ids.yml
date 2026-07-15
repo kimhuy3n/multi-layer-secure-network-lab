@@ -1,0 +1,141 @@
+---
+# ============================================================
+# PLAYBOOK 02: Cai dat Snort IDS/IPS tren pfSense
+# Day la LAYER QUAN TRONG NHAT cua de tai
+#
+# pfSense khong dung apt -> dung freebsd pkg va pfsense API
+# Playbook nay SSH vao pfSense va cai Snort package
+#
+# Chay: ansible-playbook -i inventory.ini playbooks/02_setup_snort_ids.yml
+# ============================================================
+
+- name: "LAYER 2 - Snort IDS/IPS on pfSense"
+  hosts: pfsense
+  gather_facts: false
+  vars:
+    pfsense_host: "{{ pfsense_url | default('https://192.168.10.1', true) | regex_replace('^https?://', '') }}"
+    pfsense_user: "{{ lookup('env', 'PFSENSE_USER') | default('admin', true) }}"
+    pfsense_pass: "{{ lookup('env', 'PFSENSE_PASS') | default('CHANGE_ME', true) }}"
+
+  tasks:
+    - name: "[1/5] Kiem tra pfSense accessible"
+      wait_for:
+        host: "{{ pfsense_host }}"
+        port: 443
+        timeout: 10
+      delegate_to: localhost
+
+    - name: "[2/5] Kiem tra Snort da cai chua"
+      uri:
+        url: "https://{{ pfsense_host }}/api/v1/services/snort"
+        user: "{{ pfsense_user }}"
+        password: "{{ pfsense_pass }}"
+        validate_certs: no
+        method: GET
+        status_code: [200, 401, 404]
+      delegate_to: localhost
+      register: snort_check
+      ignore_errors: yes
+
+    - name: "[3/5] Huong dan cai Snort (neu chua co API)"
+      debug:
+        msg: |
+          =====================================================
+          CAI DAT SNORT IDS/IPS TREN PFSENSE
+          =====================================================
+
+          BUOC 1: Vao pfSense Web GUI
+            {{ pfsense_url | default('https://192.168.10.1', true) }}
+            Login: $PFSENSE_USER / $PFSENSE_PASS
+
+          BUOC 2: Cai Snort Package
+            System > Package Manager > Available Packages
+            Tim: "snort"
+            Click: Install > Confirm
+
+          BUOC 3: Cau hinh Snort
+            Services > Snort > Global Settings
+            - Enable Snort VRT rules: CHECK
+            - Snort Oinkmaster Code: (dang ky free tai snort.org)
+            - Enable ET Open rules: CHECK
+            - Update interval: 12 hours
+            - Click SAVE
+
+          BUOC 4: Tao Snort Interface (LAN)
+            Services > Snort > Snort Interfaces
+            Click [+] Add
+            - Interface: LAN
+            - Enable: CHECK
+            - Send Alerts to System Log: CHECK
+            - Block Offenders: CHECK      <-- IPS MODE
+            - Block Duration: 3600 (1 gio)
+            - Detection Mode: IDS+IPS
+            Click SAVE
+
+          BUOC 5: Tao Snort Interface (WAN)
+            Services > Snort > Snort Interfaces
+            Click [+] Add
+            - Interface: WAN
+            - Enable: CHECK
+            - Send Alerts to System Log: CHECK
+            - Block Offenders: CHECK
+            - Block Duration: 3600
+            Click SAVE
+
+          BUOC 6: Chon Rules Categories
+            Snort Interfaces > LAN > LAN Categories
+            Enable:
+            [x] snort_emerging-scan          (detect nmap)
+            [x] snort_emerging-exploit       (detect exploit)
+            [x] snort_emerging-dos           (detect DoS)
+            [x] snort_emerging-web_server    (detect web attack)
+            [x] snort_emerging-malware       (detect malware)
+            [x] snort_emerging-policy        (policy violations)
+            Click SAVE
+
+          BUOC 7: Update Rules
+            Services > Snort > Updates
+            Click: Update Rules
+            Doi download xong
+
+          BUOC 8: Start Snort
+            Services > Snort > Snort Interfaces
+            Click nut PLAY (>) cho LAN va WAN
+
+          BUOC 9: Kiem tra
+            Services > Snort > Alerts
+            Chay nmap tu Kali -> phai thay alert
+
+          =====================================================
+          SAU KHI CAI XONG, CHAY PLAYBOOK 03 DE TEST
+          =====================================================
+
+    - name: "[4/5] Tao script test Snort tu Kali"
+      debug:
+        msg: |
+          === TEST SNORT TU KALI ===
+          # Tren Kali Linux chay:
+          nmap -sS -sV 192.168.10.1
+          nmap -sS -sV 192.168.10.101
+
+          # Kiem tra alert tren pfSense:
+          # Services > Snort > Alerts
+          # Phai thay: [**] [1:1000001] Possible Nmap scan
+
+    - name: "[5/5] Summary"
+      debug:
+        msg: |
+          =====================================================
+          SNORT IDS/IPS SETUP GUIDE COMPLETE
+          =====================================================
+          Mo hinh bao mat da tang sau khi cai:
+
+          Internet --> [FW Rules] --> [SNORT IDS/IPS] --> LAN
+                                          |
+                                    Detect + Block:
+                                    - Port Scan
+                                    - Exploit Attempts
+                                    - DoS Attack
+                                    - Web Attacks
+                                    - Malware Traffic
+          =====================================================

@@ -1,0 +1,40 @@
+---
+# ============================================================
+# MASTER PLAYBOOK - Chay tat ca layers
+# DATN 2026: Bao mat da tang - IDS/IPS + Firewall + VPN
+#
+# Chay: ansible-playbook -i inventory.ini playbooks/site.yml
+# ============================================================
+
+- name: "=== DATN 2026: BAO MAT DA TANG ==="
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: "Hien thi thong tin project"
+      debug:
+        msg: |
+          =====================================================
+           DATN 2026 - HE THONG BAO MAT DA TANG
+           IDS/IPS + FIREWALL + VPN + AUTOMATION
+          =====================================================
+           Layer 1: pfSense Firewall Rules
+           Layer 2: Snort IDS/IPS
+           Layer 3: OpenVPN Encryption
+           Layer 4: Host Security (fail2ban + UFW)
+           Layer 5: Auto Incident Response
+           Layer 6: Monitoring Dashboard
+          =====================================================
+           Topology:
+           Internet -> [FW] -> [IDS/IPS] -> [VPN] -> LAN
+                                                       |
+                                              srv-lan-01 (Protected)
+          =====================================================
+
+# Layer 1: Firewall Rules
+- import_playbook: 03_firewall_rules.yml
+
+# Layer 2: IDS/IPS Guide
+- import_playbook: 02_setup_snort_ids.yml
+
+# Layer 4: Ubuntu Server Hardening
+- import_playbook: 01_setup_ubuntu_server.yml

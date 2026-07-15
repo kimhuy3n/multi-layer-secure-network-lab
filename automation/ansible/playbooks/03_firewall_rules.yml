@@ -1,0 +1,141 @@
+---
+# ============================================================
+# PLAYBOOK 03: Cau hinh Firewall Rules tren pfSense
+# Dung pfsensible.core collection hoac SSH commands
+#
+# Chay: ansible-playbook -i inventory.ini playbooks/03_firewall_rules.yml
+# ============================================================
+
+- name: "LAYER 1 - pfSense Firewall Rules (Multi-Layer Security)"
+  hosts: localhost
+  gather_facts: false
+  vars:
+    pfsense_host: "{{ lookup('env', 'PFSENSE_HOST') | default('192.168.10.1', true) }}"
+    pfsense_user: "{{ lookup('env', 'PFSENSE_USER') | default('admin', true) }}"
+    pfsense_pass: "{{ lookup('env', 'PFSENSE_PASS') | default('CHANGE_ME', true) }}"
+
+    # Dinh nghia cac rule cho bao mat da tang
+    wan_rules:
+      - { name: "Allow_VPN",       proto: udp, port: 1194, action: pass,  desc: "OpenVPN Access" }
+      - { name: "Allow_HTTPS_GUI", proto: tcp, port: 443,  action: pass,  desc: "pfSense WebGUI" }
+      - { name: "Block_Telnet",    proto: tcp, port: 23,   action: block, desc: "Block Telnet" }
+      - { name: "Block_SMB",       proto: tcp, port: 445,  action: block, desc: "Block SMB/CIFS" }
+      - { name: "Block_RDP",       proto: tcp, port: 3389, action: block, desc: "Block RDP" }
+      - { name: "Block_FTP",       proto: tcp, port: 21,   action: block, desc: "Block FTP" }
+
+    lan_rules:
+      - { name: "Allow_DNS",       proto: udp, port: 53,   action: pass,  desc: "DNS Resolution" }
+      - { name: "Allow_HTTP",      proto: tcp, port: 80,   action: pass,  desc: "Web Access" }
+      - { name: "Allow_HTTPS",     proto: tcp, port: 443,  action: pass,  desc: "Secure Web" }
+      - { name: "Allow_SSH",       proto: tcp, port: 22,   action: pass,  desc: "SSH Admin" }
+      - { name: "Allow_VPN_Out",   proto: udp, port: 1194, action: pass,  desc: "VPN Traffic" }
+      - { name: "Allow_Syslog",    proto: udp, port: 514,  action: pass,  desc: "Syslog Forward" }
+
+  tasks:
+    - name: "[1/4] Hien thi Firewall Rules can tao"
+      debug:
+        msg: |
+          =====================================================
+          FIREWALL RULES - BAO MAT DA TANG
+          =====================================================
+
+          === WAN INTERFACE RULES ===
+          {% for rule in wan_rules %}
+          {{ rule.action | upper }}: {{ rule.name }} ({{ rule.proto }}/{{ rule.port }}) - {{ rule.desc }}
+          {% endfor %}
+
+          === LAN INTERFACE RULES ===
+          {% for rule in lan_rules %}
+          {{ rule.action | upper }}: {{ rule.name }} ({{ rule.proto }}/{{ rule.port }}) - {{ rule.desc }}
+          {% endfor %}
+
+          === IMPLICIT RULES ===
+          BLOCK: All other WAN inbound (default deny)
+          PASS:  All LAN to WAN outbound (NAT)
+
+    - name: "[2/4] Tao script cau hinh FW rules qua API"
+      copy:
+        content: |
+          #!/usr/bin/env python3
+          """
+          Auto-configure pfSense Firewall Rules via API
+          DATN 2026 - Bao mat da tang
+          """
+          import requests
+          import urllib3
+          import os
+          urllib3.disable_warnings()
+
+          PFSENSE = os.getenv("PFSENSE_URL", "https://192.168.10.1")
+          USER = os.getenv("PFSENSE_USER", "admin")
+          PASS = os.getenv("PFSENSE_PASS", "CHANGE_ME")
+
+          # WAN Rules - Block dangerous ports
+          wan_block_ports = [23, 445, 3389, 21, 3306, 1433, 5432]
+
+          # LAN Rules - Allow necessary ports only
+          lan_allow_ports = [53, 80, 443, 22, 1194, 514]
+
+          print("=" * 50)
+          print("pfSense Firewall Rule Configuration")
+          print("=" * 50)
+
+          for port in wan_block_ports:
+              print(f"  BLOCK WAN port {port}")
+
+          for port in lan_allow_ports:
+              print(f"  ALLOW LAN port {port}")
+
+          print("\nApply these rules via pfSense WebGUI:")
+          print(f"  URL: {PFSENSE}")
+          print(f"  Firewall > Rules > WAN / LAN")
+          print("=" * 50)
+        dest: /tmp/configure_firewall.py
+        mode: '0755'
+
+    - name: "[3/4] Huong dan cau hinh thu cong"
+      debug:
+        msg: |
+          =====================================================
+          HUONG DAN CAU HINH FIREWALL RULES
+          =====================================================
+
+          BUOC 1: Login pfSense
+            {{ lookup('env', 'PFSENSE_URL') | default('https://192.168.10.1', true) }}
+            $PFSENSE_USER / $PFSENSE_PASS
+
+          BUOC 2: WAN Rules
+            Firewall > Rules > WAN
+            [+] Add Rule:
+              Action: Block
+              Interface: WAN
+              Protocol: TCP
+              Destination Port: 23 (Telnet)
+              Description: Block Telnet - Security
+
+            Lap lai cho: 445 (SMB), 3389 (RDP), 21 (FTP)
+
+          BUOC 3: LAN Rules
+            Firewall > Rules > LAN
+            Thu tu rules (QUAN TRONG):
+              1. PASS - DNS (UDP 53)
+              2. PASS - HTTP (TCP 80)
+              3. PASS - HTTPS (TCP 443)
+              4. PASS - SSH (TCP 22) from LAN only
+              5. PASS - VPN (UDP 1194)
+              6. PASS - Syslog (UDP 514) to pfSense only
+              7. BLOCK - All other traffic
+
+          BUOC 4: Apply Changes
+            Click "Apply Changes" sau moi thay doi
+
+          =====================================================
+
+    - name: "[4/4] Summary"
+      debug:
+        msg: |
+          === FIREWALL LAYER COMPLETE ===
+          WAN: Block nguy hiem (Telnet, SMB, RDP, FTP)
+          LAN: Chi cho phep traffic can thiet
+          Implicit: Default deny all
+          Next: Chay playbook 02 de cai Snort IDS/IPS

@@ -1,0 +1,50 @@
+# VMware / VM artifacts
+Firewall_fw-edge-01/
+UbuntuSV_srv-lan-01/
+Ubuntu_vpn-client-01/
+Kali/
+*.vmdk
+*.vmem
+*.vmsn
+*.vmss
+*.vmsd
+*.vmxf
+*.nvram
+*.lck
+*.scoreboard
+*.vmpl
+*.tmpRevert.vmsd
+*.vmem.lck
+*.vmdk.lck
+*.vmx.lck
+
+# Logs and temp files
+*.log
+*.tmp
+$RECYCLE.BIN/
+~$*
+*.swp
+*.swo
+
+# Office and plain-text lab notes
+*.docx
+*.txt
+TỔNG_HỢP_TẤT_CẢ_FILE.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local runtime data
+automation/scripts/incidents.log
+automation/monitoring/*.db

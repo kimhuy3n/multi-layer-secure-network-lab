@@ -1,0 +1,5 @@
+ansible_user: "{{ lookup('env', 'VPN_CLIENT_USER') | default('vpn-client-01', true) }}"
+ansible_password: "{{ lookup('env', 'VPN_CLIENT_PASS') | default('CHANGE_ME', true) }}"
+ansible_become: true
+ansible_become_password: "{{ lookup('env', 'VPN_CLIENT_BECOME_PASS') | default(lookup('env', 'VPN_CLIENT_PASS') | default('CHANGE_ME', true), true) }}"
+ansible_python_interpreter: "{{ lookup('env', 'ANSIBLE_PYTHON_INTERPRETER') | default('/usr/bin/python3', true) }}"

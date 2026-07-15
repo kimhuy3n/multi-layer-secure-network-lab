@@ -1,0 +1,2 @@
+ansible_user: "{{ lookup('env', 'PFSENSE_USER') | default('admin', true) }}"
+ansible_password: "{{ lookup('env', 'PFSENSE_PASS') | default('CHANGE_ME', true) }}"

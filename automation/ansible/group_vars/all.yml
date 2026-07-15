@@ -1,0 +1,8 @@
+lan_network: "{{ lookup('env', 'LAN_NETWORK') | default('192.168.10.0/24', true) }}"
+lan_gateway: "{{ lookup('env', 'LAN_GATEWAY') | default('192.168.10.1', true) }}"
+dns_server: "{{ lookup('env', 'DNS_SERVER') | default('8.8.8.8', true) }}"
+vpn_network: "{{ lookup('env', 'VPN_NETWORK') | default('10.10.0.0/24', true) }}"
+vpn_port: "{{ lookup('env', 'VPN_PORT') | default('1194', true) }}"
+pfsense_url: "{{ lookup('env', 'PFSENSE_URL') | default('https://192.168.10.1', true) }}"
+pfsense_admin_user: "{{ lookup('env', 'PFSENSE_USER') | default('admin', true) }}"
+pfsense_admin_pass: "{{ lookup('env', 'PFSENSE_PASS') | default('CHANGE_ME', true) }}"
