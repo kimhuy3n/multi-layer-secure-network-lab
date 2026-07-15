@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:03,000
+Bảo mật đa tầng
+
+2
+00:00:03,000 --> 00:00:06,000
+pfSense - OpenVPN - Snort
+
+3
+00:00:06,000 --> 00:00:09,000
+LAN, WAN, OpenVPN
+
+4
+00:00:09,000 --> 00:00:12,000
+Firewall chặn dịch vụ nguy hiểm
+
+5
+00:00:12,000 --> 00:00:15,000
+OpenVPN truy cập an toàn
+
+6
+00:00:15,000 --> 00:00:18,000
+Snort phát hiện tấn công
+
+7
+00:00:18,000 --> 00:00:21,000
+Ubuntu hardening
+
+8
+00:00:21,000 --> 00:00:24,000
+Giám sát và phản ứng
+
+9
+00:00:24,000 --> 00:00:27,000
+Quét mạng - Brute force - Flood
+
+10
+00:00:27,000 --> 00:00:30,000
+Kết quả: tăng khả năng phòng thủ
