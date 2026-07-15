@@ -30,6 +30,7 @@ $RECYCLE.BIN/
 *.docx
 *.txt
 TỔNG_HỢP_TẤT_CẢ_FILE.md
+!automation/scripts/requirements.txt
 
 # Python
 __pycache__/
