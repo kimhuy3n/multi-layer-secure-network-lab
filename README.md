@@ -1,21 +1,27 @@
-# Multi-Layer Secure Network Lab
+# Research and Development of a Multi-Layer Secure Network Architecture
 
-Defense-in-Depth laboratory for a segmented network built around pfSense, OpenVPN, Snort, Ubuntu hardening, automation, and log monitoring.
+This repository documents and packages the graduation project on a Defense-in-Depth network security model built around `pfSense`, `OpenVPN`, `Snort IDS/IPS`, Ubuntu hardening, automation, and monitoring.
 
-## Overview
+The project follows the thesis structure and the lab topology shown in the report, while the scripts in this repository are parameterized so they can be adapted to the exact IP plan of your virtual lab.
 
-This project demonstrates a layered security architecture for a small virtual enterprise network. The lab is designed to show how preventive, detective, and responsive controls work together:
+## Thesis Architecture
 
-- `pfSense` provides firewalling, gateway routing, and VPN termination
-- `Snort` is used as the IDS/IPS layer for scanning and attack detection
-- `OpenVPN` provides authenticated remote access to the internal LAN
-- `Ubuntu Server` is hardened with `UFW`, `fail2ban`, `auditd`, and logging
-- Python scripts provide validation, incident response, and attack simulation
-- A monitoring stack collects and visualizes logs for incident review
+The report describes a layered architecture with these core zones:
+
+- `WAN` network: `172.20.10.0/24`
+- `LAN` network: `192.168.10.0/24`
+- `OpenVPN` network: `10.10.10.0/24`
+
+Core nodes:
+
+- `pfSense` at `192.168.10.1` on the LAN side, with WAN and OpenVPN interfaces
+- `Ubuntu Server` at `192.168.10.102`, acting as the protected internal host and monitoring host
+- `Kali Linux` as the attacker/test machine
+- `VPN client` machine used for remote-access validation
 
 ## Network Diagrams
 
-### Topology
+### Overall topology
 
 ![Network topology](docs/images/network-topology.png)
 
@@ -23,48 +29,70 @@ This project demonstrates a layered security architecture for a small virtual en
 
 ![Experimental deployment](docs/images/experimental-deployment.png)
 
-## Lab Nodes
+## What The Project Demonstrates
 
-- `fw-edge-01` - pfSense firewall, gateway, VPN server
-- `srv-lan-01` - internal Ubuntu server and monitoring host
-- `vpn-client-01` - internal VPN client machine
-- `kali-linux` - attacker/test machine for validation scenarios
+- Firewall access control and network segmentation with `pfSense`
+- Secure remote access with `OpenVPN`
+- Network attack detection and prevention with `Snort IDS/IPS`
+- Host hardening on Ubuntu using `UFW`, `fail2ban`, and `auditd`
+- Security monitoring and incident response using Python-based automation
+- Log collection and dashboarding with `syslog-ng`, `Promtail`, `Loki`, and `Grafana`
+- Attack simulation scenarios for validation:
+  - ICMP ping and host discovery
+  - Nmap reconnaissance and port scanning
+  - SSH and FTP authentication attempts
+  - Brute-force and light DoS-style testing
 
-## Key Capabilities
+## Thesis Scenarios
 
-- Firewall rule planning for WAN and LAN traffic
-- OpenVPN remote access with client certificate flow
-- Snort IDS/IPS setup guide and validation checks
-- Ubuntu host hardening with SSH restrictions and UFW policy
-- Auto-response prototype that reads logs and attempts IP blocking
-- Attack simulation workflow for reconnaissance, vulnerability checks, brute force, and DoS-style tests
-- Log collection stack using Loki, Promtail, Grafana, and syslog-ng
+The report evaluates the architecture through these scenarios:
 
-## Repository Layout
+1. Internal network access control
+2. Remote access via OpenVPN
+3. Detection of network reconnaissance and scanning
+4. Detection of unauthorized authentication attempts
+5. SOC monitoring and incident response
 
-- `automation/ansible/` - inventory, group vars, and playbooks
+The report also includes:
+
+- OpenVPN certificate creation and client export
+- Snort interface configuration and rule selection
+- A SOC monitoring module that analyzes traffic/logs, produces alerts, and supports response actions
+- Telegram bot-driven alerting and IP blocking in the written thesis
+
+## Repository Contents
+
+- `automation/ansible/` - inventory, group variables, and playbooks
 - `automation/scripts/` - Python and shell automation
-- `automation/monitoring/` - logging and dashboard stack
+- `automation/monitoring/` - monitoring stack and log pipeline
 - `docs/images/` - diagrams extracted from the report
-- `Firewall_fw-edge-01/`, `UbuntuSV_srv-lan-01/`, `Ubuntu_vpn-client-01/`, `Kali/` - VM artifacts and local notes
+- `Firewall_fw-edge-01/`, `UbuntuSV_srv-lan-01/`, `Ubuntu_vpn-client-01/`, `Kali/` - local VM artifacts and notes
 
-## How To Use
+## How To Run
 
-1. Copy `automation/.env.example` to `.env`.
-2. Fill in the environment values for your lab.
-3. Run the Ansible playbooks or Python scripts from the `automation` folder.
-4. Use the attack simulation script to validate firewall, IDS/IPS, VPN, and host security controls.
+1. Copy [`automation/.env.example`](automation/.env.example) to `.env`.
+2. Set the values to match your lab.
+3. Install dependencies on the control machine:
+
+```bash
+sudo apt install ansible python3-pip sshpass -y
+pip3 install -r automation/scripts/requirements.txt
+```
+
+4. Run the Ansible playbooks and scripts from `automation/`.
+5. Start the monitoring stack on the Ubuntu server with Docker Compose.
 
 ## Environment Variables
 
-The scripts avoid hardcoded secrets and should be configured with environment variables.
-
-Required or commonly used variables:
+Common variables used by the scripts:
 
 - `PFSENSE_HOST`
 - `PFSENSE_USER`
 - `PFSENSE_PASS`
 - `PFSENSE_URL`
+- `PFSENSE_FW_LOG`
+- `PFSENSE_SNORT_LOG`
+- `PFSENSE_BLOCK_TABLE`
 - `UBUNTU_HOST`
 - `UBUNTU_USER`
 - `UBUNTU_PASS`
@@ -78,19 +106,16 @@ Required or commonly used variables:
 - `VPN_NETWORK`
 - `VPN_PORT`
 - `SNORT_TABLE`
-- `PFSENSE_FW_LOG`
-- `PFSENSE_SNORT_LOG`
-- `PFSENSE_BLOCK_TABLE`
 - `INCIDENTS_LOG`
 
-See [`automation/.env.example`](automation/.env.example) for a sample configuration.
+See [`automation/.env.example`](automation/.env.example) for a sample.
 
-## Security Notes
+## Practical Notes
 
-- VM images, snapshots, logs, and office notes are ignored through `.gitignore`.
-- The automation is intended for the lab environment only.
-- The SOC/monitoring layer in the repository should be treated as a prototype unless you extend it with a full Telegram/SIEM backend.
+- The Snort layer is already represented in the lab and in the report.
+- The automation and monitoring pieces in this repository are organized to support the thesis workflow, but they still depend on the lab environment being configured correctly.
+- If your lab uses different IPs or credentials, update `.env` rather than editing the scripts directly.
 
 ## Report Traceability
 
-The images in `docs/images/` were extracted from the project report so the GitHub repository matches the written thesis and shows the same topology and deployment model.
+The network diagrams in `docs/images/` were extracted directly from the report so the GitHub repository stays aligned with the thesis.

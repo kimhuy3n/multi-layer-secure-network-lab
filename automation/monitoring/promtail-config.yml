@@ -54,3 +54,21 @@ scrape_configs:
           job: incidents
           host: srv-lan-01
           __path__: /var/log/incidents.log
+
+  # pfSense logs received by syslog-ng
+  - job_name: pfsense
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: pfsense
+          host: fw-edge-01
+          __path__: /var/log/syslog-ng/pfsense.log
+
+  # syslog-ng local logs
+  - job_name: syslog_ng_local
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: syslog-ng
+          host: srv-lan-01
+          __path__: /var/log/syslog-ng/local.log

@@ -13,9 +13,9 @@ import subprocess
 import time
 import sys
 
+from runtime_config import env, load_env
 
-def env(name, default):
-    return os.getenv(name, default)
+load_env()
 
 
 TARGET_FW = env("TARGET_FW", "192.168.10.1")    # pfSense

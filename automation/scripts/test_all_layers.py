@@ -12,11 +12,9 @@ import socket
 import sys
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent
+from runtime_config import env, load_env, SCRIPT_DIR
 
-
-def env(name, default):
-    return os.getenv(name, default)
+load_env()
 
 
 # === CAU HINH ===

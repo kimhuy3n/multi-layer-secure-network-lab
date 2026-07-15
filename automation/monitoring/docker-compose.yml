@@ -33,6 +33,7 @@ services:
     image: grafana/promtail:2.9.0
     volumes:
       - /var/log:/var/log:ro
+      - syslog-data:/var/log/syslog-ng:ro
       - ./promtail-config.yml:/etc/promtail/config.yml:ro
     command: -config.file=/etc/promtail/config.yml
     depends_on:
@@ -50,6 +51,7 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - loki
     restart: unless-stopped
@@ -62,9 +64,24 @@ services:
       - "514:514/tcp"
     volumes:
       - syslog-data:/var/log/syslog-ng
+      - ./syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf:ro
+    restart: unless-stopped
+
+  # SOC Python - auto response daemon
+  soc:
+    build:
+      context: ..
+      dockerfile: monitoring/soc/Dockerfile
+    env_file:
+      - ../.env
+    volumes:
+      - soc-data:/data
+    depends_on:
+      - syslog-ng
     restart: unless-stopped
 
 volumes:
   loki-data:
   grafana-data:
   syslog-data:
+  soc-data:

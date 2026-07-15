@@ -1,26 +1,79 @@
-# PHAN TICH DE TAI: BAO MAT DA TANG - IDS/IPS + FIREWALL + VPN
+# Thesis Alignment Notes
 
-## HIEN TRANG LAB
+This note maps the graduation report to the repository layout so the GitHub project stays aligned with the written thesis.
+
+## Report Summary
+
+The thesis presents a multi-layer security architecture with:
+
+- `pfSense` as firewall, gateway, and VPN endpoint
+- `OpenVPN` for secure remote access
+- `Snort IDS/IPS` for detection and prevention
+- An Ubuntu-based SOC/monitoring host
+- Python automation for analysis, response, and validation
+- Grafana-based log review and incident visibility
+
+## Architecture In The Report
 
 ```
-TANG (LAYER)         | CONG NGHE       | TRANG THAI
----------------------|-----------------|------------------
-Layer 1: Firewall    | pfSense         | DONE (co ban)
-Layer 2: VPN         | OpenVPN         | DONE
-Layer 3: IDS/IPS     | Snort           | DONE (da validate)
-Layer 4: Automation  | Ansible+Python  | PARTIAL
-Layer 5: Monitoring  | Grafana/Log     | PARTIAL
+Internet
+  -> pfSense WAN
+  -> pfSense LAN / Snort
+  -> Internal LAN (Ubuntu Server)
+  -> OpenVPN remote access for Kali / client machine
+  -> SOC monitoring and incident response
 ```
 
-## VAN DE LON NHAT
+## Reported Networks
 
-De tai la "Bao mat da tang IDS/IPS + FW + VPN"
-Nhung phan can hoan thien nhat hien la automation va monitoring,
-khong phai IDS/IPS.
+- `WAN`: `172.20.10.0/24`
+- `LAN`: `192.168.10.0/24`
+- `OpenVPN`: `10.10.10.0/24`
 
-## THU TU UU TIEN
+## Main Experimental Scenarios
 
-1. Hoan thien Ansible tu dong cau hinh toan bo lab
-2. Python auto-response: detect -> block
-3. Ket noi log pfSense -> syslog-ng -> Loki -> Grafana
-4. Tinh chinh dashboard va rule set
+1. Firewall access control and segmentation
+2. OpenVPN authentication and remote LAN access
+3. Snort detection of:
+   - ICMP ping
+   - Nmap SYN scan
+   - SSH and FTP authentication attempts
+4. SOC monitoring of:
+   - service port scans
+   - SSH brute force
+5. Incident response and IP blocking
+
+## Repository Mapping
+
+| Thesis component | Repository path | Status |
+|---|---|---|
+| Firewall planning | `automation/ansible/playbooks/03_firewall_rules.yml` | Documented and parameterized |
+| Ubuntu hardening | `automation/ansible/playbooks/01_setup_ubuntu_server.yml` | Scripted |
+| Snort layer | `automation/ansible/playbooks/02_setup_snort_ids.yml` | Documented with validation flow |
+| SOC response | `automation/scripts/auto_response.py` | Prototype automation |
+| Attack validation | `automation/scripts/attack_simulation.py` | Scripted |
+| Test suite | `automation/scripts/test_all_layers.py` | Scripted |
+| Monitoring stack | `automation/monitoring/docker-compose.yml` | Dockerized |
+
+## What Is Already Represented Well
+
+- Snort is part of the design and the validation flow.
+- The network topology is represented in the extracted diagrams.
+- The automation scripts are parameterized and safe to adjust with `.env`.
+
+## What Still Depends On The Lab
+
+- pfSense credentials and SSH access
+- exact IP values in the live virtual machines
+- log forwarding path from pfSense to syslog-ng
+- whether Grafana shows live pfSense/Snort events in a given lab run
+
+## Practical Reading Of The Repo
+
+When presenting this project, describe the repository as:
+
+- a thesis-aligned lab implementation
+- a set of deployment and validation assets
+- a monitoring and automation prototype that supports the written architecture
+
+That framing is accurate to the report and avoids overclaiming beyond what the scripts currently automate.
