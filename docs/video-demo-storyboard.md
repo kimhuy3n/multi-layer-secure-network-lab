@@ -1,166 +1,155 @@
-# Video Demo Storyboard
+# Kịch Bản Lời Thuyết Minh Video Demo
 
-This document is a demo script for a short HD presentation video of the graduation project.
+Tài liệu này dùng để đọc lời thuyết minh cho video demo HD của đồ án tốt nghiệp.
 
-## Goal
+## Mục Tiêu
 
-Show the defense-in-depth lab as a clean, believable system demo:
+Giới thiệu mô hình bảo mật đa tầng theo hướng `defense-in-depth` với các lớp:
 
-- firewall and segmentation
-- VPN remote access
-- Snort IDS/IPS detection
-- host hardening
-- monitoring and incident response
+- firewall và phân đoạn mạng
+- truy cập từ xa qua VPN
+- phát hiện tấn công bằng Snort IDS/IPS
+- tăng cường bảo mật máy chủ Ubuntu
+- giám sát và phản ứng sự cố
 
-## Video Structure
+## Cảnh 1: Mở Đầu
 
-### Scene 1: Title
+Hình:
 
-Visual:
+- tiêu đề đề tài
+- toàn bộ sơ đồ mạng
 
-- Project title
-- full-screen view of the network topology diagram
+Lời thuyết minh:
 
-Narration:
+- "Đây là đồ án nghiên cứu và triển khai mô hình bảo mật đa tầng theo hướng defense-in-depth."
+- "Hệ thống được xây dựng trên pfSense, OpenVPN, Snort IDS/IPS, Ubuntu hardening và lớp giám sát sự cố."
 
-- "This project presents a multi-layer secure network architecture based on the defense-in-depth model."
+## Cảnh 2: Kiến Trúc Tổng Quan
 
-### Scene 2: Overall Architecture
+Hình:
 
-Visual:
+- ảnh `network-topology.png`
+- làm nổi bật pfSense ở trung tâm
+- làm nổi bật các vùng LAN, WAN và OpenVPN
 
-- show the `network-topology.png`
-- highlight pfSense in the center
-- highlight LAN, WAN, and OpenVPN segments
+Lời thuyết minh:
 
-Narration:
+- "Mạng được chia thành ba vùng chính là WAN, LAN và OpenVPN."
+- "pfSense đóng vai trò firewall, gateway và điểm kết nối VPN."
 
-- "The system is divided into WAN, LAN, and OpenVPN zones."
-- "pfSense acts as the firewall, gateway, and VPN endpoint."
+## Cảnh 3: Các Máy Trong Lab
 
-### Scene 3: Lab Nodes
+Hình:
 
-Visual:
-
-- show the virtual machines
+- các máy ảo trong mô hình
 - pfSense
-- Ubuntu server
+- Ubuntu Server
 - VPN client
 - Kali attacker
 
-Narration:
+Lời thuyết minh:
 
-- "The lab is deployed on four virtual machines."
-- "Ubuntu is the protected internal host, while Kali is used for validation and attack simulation."
+- "Lab này được triển khai trên bốn máy ảo."
+- "Ubuntu là máy chủ nội bộ được bảo vệ, còn Kali được dùng để mô phỏng tấn công và kiểm thử."
 
-### Scene 4: Firewall Layer
+## Cảnh 4: Lớp Firewall
 
-Visual:
+Hình:
 
-- pfSense WAN rules
-- blocked ports: Telnet, SMB, RDP, FTP
+- rule WAN của pfSense
+- các cổng bị chặn như Telnet, SMB, RDP và FTP
 
-Narration:
+Lời thuyết minh:
 
-- "The firewall layer blocks dangerous services and keeps the default-deny posture."
+- "Lớp firewall chặn các dịch vụ nguy hiểm và giữ nguyên nguyên tắc default deny."
+- "Chỉ các dịch vụ cần thiết mới được phép đi qua."
 
-### Scene 5: OpenVPN Layer
+## Cảnh 5: Lớp OpenVPN
 
-Visual:
+Hình:
 
-- OpenVPN connection log
-- VPN user list
-- remote client reaching internal network
+- log kết nối OpenVPN
+- danh sách user VPN
+- máy khách truy cập vào mạng nội bộ
 
-Narration:
+Lời thuyết minh:
 
-- "Authorized users connect through OpenVPN to reach the internal LAN securely."
+- "Người dùng hợp lệ kết nối qua OpenVPN để truy cập an toàn vào mạng LAN."
+- "Lớp VPN đảm bảo xác thực trước khi cho phép vào hệ thống nội bộ."
 
-### Scene 6: Snort IDS/IPS
+## Cảnh 6: Lớp Snort IDS/IPS
 
-Visual:
+Hình:
 
-- Snort alerts
-- nmap scan alert
-- ICMP block alert
+- cảnh báo Snort
+- cảnh báo scan bằng Nmap
+- cảnh báo ICMP bị chặn
 
-Narration:
+Lời thuyết minh:
 
-- "Snort detects reconnaissance, scanning, and unauthorized traffic."
-- "In IPS mode, selected traffic is blocked automatically."
+- "Snort được dùng để phát hiện các hành vi quét dò, truy cập bất thường và lưu lượng tấn công."
+- "Ở chế độ IPS, một số traffic phù hợp với rule sẽ bị chặn tự động."
 
-### Scene 7: Host Hardening
+## Cảnh 7: Tăng Cường Bảo Mật Máy Chủ
 
-Visual:
+Hình:
 
-- Ubuntu hardening checklist
+- checklist hardening Ubuntu
 - fail2ban
 - UFW
 - auditd
 
-Narration:
+Lời thuyết minh:
 
-- "The Ubuntu host is hardened with fail2ban, UFW, auditd, and SSH restrictions."
+- "Máy chủ Ubuntu được tăng cường bảo mật bằng fail2ban, UFW, auditd và giới hạn đăng nhập SSH."
+- "Đây là lớp phòng thủ ở mức host để bổ sung cho firewall và IDS."
 
-### Scene 8: Monitoring and Response
+## Cảnh 8: Giám Sát Và Phản Ứng
 
-Visual:
+Hình:
 
 - Grafana dashboard
 - Loki logs
-- syslog-ng receiver
-- auto-response console
+- syslog-ng
+- màn hình auto-response
 
-Narration:
+Lời thuyết minh:
 
-- "Logs are centralized and visualized for incident review."
-- "The Python-based response module reads events and can block suspicious IPs."
+- "Các log được gom tập trung để phục vụ giám sát và phân tích sự cố."
+- "Module Python có thể đọc log, phát hiện sự kiện nghi ngờ và hỗ trợ chặn IP tấn công."
 
-### Scene 9: Attack Simulation
+## Cảnh 9: Mô Phỏng Tấn Công
 
-Visual:
+Hình:
 
-- nmap scan
-- SSH brute-force attempts
-- light DoS/flood test
+- quét Nmap
+- brute force SSH
+- mô phỏng flood nhẹ
 
-Narration:
+Lời thuyết minh:
 
-- "The validation scenarios include scanning, brute force, and flood-style traffic."
-- "Each attack is checked against the firewall, IDS/IPS, and host defenses."
+- "Phần kiểm thử bao gồm quét mạng, brute force và mô phỏng flood nhẹ."
+- "Mỗi tình huống đều được kiểm tra trên firewall, Snort và lớp bảo vệ host."
 
-### Scene 10: Conclusion
+## Cảnh 10: Kết Luận
 
-Visual:
+Hình:
 
-- final topology view
-- results summary
+- sơ đồ mạng cuối cùng
+- ảnh kết quả tổng kết
 
-Narration:
+Lời thuyết minh:
 
-- "The project demonstrates that layered security improves detection, prevention, and response in a controlled lab environment."
+- "Kết quả cho thấy mô hình bảo mật đa tầng giúp tăng khả năng phát hiện, ngăn chặn và phản ứng sự cố trong môi trường lab."
 
-## Suggested Shot List
+## Gợi Ý Thời Lượng
 
-1. title screen
-2. network topology diagram
-3. pfSense VM and lab topology
-4. firewall rules
-5. OpenVPN logs and client access
-6. Snort alerts
-7. Ubuntu hardening commands or terminal output
-8. Grafana dashboard and log flow
-9. attack simulation screen recordings
-10. closing slide with project summary
+- 90 đến 150 giây cho bản ngắn phục vụ CV
+- 3 đến 5 phút cho bản thuyết trình đồ án
 
-## Suggested Runtime
+## Gợi Ý Chữ Hiển Thị Trên Video
 
-- 90 to 150 seconds for a CV-friendly version
-- 3 to 5 minutes for a thesis presentation version
-
-## Suggested On-Screen Text
-
-- "Defense-in-Depth Security Lab"
+- "Bảo mật đa tầng"
 - "Firewall"
 - "OpenVPN"
 - "Snort IDS/IPS"
