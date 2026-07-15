@@ -1,6 +1,8 @@
-# Design Reference
+# Demo Asset Reference
 
-This repository keeps a short reference to the design file used for the demo visuals:
+This repository keeps a short reference to the design file used for the demo visuals.
+
+Design source:
 
 - `Thiết kế chưa có tên (1).pdf`
 
@@ -11,4 +13,3 @@ Use it as the source for the demo layout or visual presentation. If you want it 
 - extract the main layout or mockup from the PDF
 - use it as the visual base for a demo slide or video
 - keep the repo clean by avoiding temporary exports and working files
-

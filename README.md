@@ -23,11 +23,11 @@ Core nodes:
 
 ### Overall topology
 
-![Network topology](docs/images/network-topology.png)
+![Network topology](docs/images/topology.png)
 
 ### Experimental deployment
 
-![Experimental deployment](docs/images/experimental-deployment.png)
+![Experimental deployment](docs/images/lab-deployment.png)
 
 ## What The Project Demonstrates
 
@@ -66,7 +66,7 @@ The report also includes:
 - `automation/scripts/` - Python and shell automation
 - `automation/monitoring/` - monitoring stack and log pipeline
 - `docs/images/` - diagrams extracted from the report
-- `Firewall_fw-edge-01/`, `UbuntuSV_srv-lan-01/`, `Ubuntu_vpn-client-01/`, `Kali/` - local VM artifacts and notes
+- Local VM artifacts and raw notes are intentionally excluded from Git to keep the repository focused on the deliverables.
 
 ## How To Run
 
