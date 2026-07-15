@@ -29,6 +29,12 @@ Core nodes:
 
 ![Experimental deployment](docs/images/lab-deployment.png)
 
+## Demo Video
+
+A short demo video is included for portfolio presentation:
+
+- [`docs/videos/demo-overview.mp4`](docs/videos/demo-overview.mp4)
+
 ## What The Project Demonstrates
 
 - Firewall access control and network segmentation with `pfSense`
