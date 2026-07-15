@@ -1,103 +1,34 @@
 # Automation Workflow
 
-This folder contains the deployment and validation workflow for the graduation project.
+This folder contains the deployment and validation flow for the lab.
 
-## 1. Prepare the control machine
+## Where Each Command Runs
 
-On the control machine or Kali test host:
+- Control machine or Kali host: `Ansible`, Python validation scripts, attack simulation scripts
+- Ubuntu monitoring host: Docker Compose stack for `syslog-ng`, `Promtail`, `Loki`, `Grafana`, and the SOC container
+- pfSense: firewall rules, VPN, Snort, and block table
+
+## Prerequisites
+
+On the control machine:
 
 ```bash
 sudo apt install ansible python3-pip sshpass -y
 pip3 install -r scripts/requirements.txt
 ```
 
-## 2. Configure the environment
+The Python scripts use `paramiko` and `requests`.
 
-Copy [`automation/.env.example`](./.env.example) to `.env` and fill in the values for your lab.
+## Environment
 
-The scripts read configuration from environment variables so the same code can be reused across lab instances.
+Copy [`./.env.example`](./.env.example) to `./.env` and fill it with the values from your lab.
 
-## 3. Deploy the Ubuntu hardening layer
-
-```bash
-ansible-playbook -i ansible/inventory.ini ansible/playbooks/01_setup_ubuntu_server.yml
-```
-
-This playbook configures:
-
-- Apache web service
-- `fail2ban`
-- `UFW`
-- `auditd`
-- SSH root login hardening
-- syslog forwarding
-
-## 4. Review the Snort IDS/IPS layer
-
-```bash
-ansible-playbook -i ansible/inventory.ini ansible/playbooks/02_setup_snort_ids.yml
-```
-
-This playbook documents the Snort installation and configuration flow described in the thesis:
-
-- pfSense access check
-- Snort package and interface setup
-- rules category selection
-- IDS/IPS validation steps
-
-## 5. Review firewall rules
-
-```bash
-ansible-playbook -i ansible/inventory.ini ansible/playbooks/03_firewall_rules.yml
-```
-
-This playbook captures the pfSense WAN and LAN rule plan used in the thesis:
-
-- block Telnet, SMB, RDP, and FTP on WAN
-- allow only required LAN traffic
-- keep the default deny posture
-
-## 6. Start the monitoring stack
-
-On the Ubuntu monitoring host:
-
-```bash
-cd monitoring
-docker compose up -d
-```
-
-The stack includes:
-
-- `Loki`
-- `Grafana`
-- `Promtail`
-- `syslog-ng`
-- `soc` Python container
-
-## 7. Run validation
-
-```bash
-python3 scripts/test_all_layers.py
-python3 scripts/attack_simulation.py
-python3 scripts/auto_response.py
-```
-
-Expected validation flow:
-
-- port scan triggers IDS/IPS alerts
-- failed login attempts trigger host protection
-- log events are stored for review
-- incident response can block source IPs through the pfSense table
-
-## 8. Environment variables
-
-The main values used by the automation are listed in `.env.example`.
-
-Important ones:
+Important values:
 
 - `PFSENSE_HOST`
 - `PFSENSE_USER`
 - `PFSENSE_PASS`
+- `PFSENSE_URL`
 - `PFSENSE_FW_LOG`
 - `PFSENSE_SNORT_LOG`
 - `PFSENSE_BLOCK_TABLE`
@@ -106,4 +37,118 @@ Important ones:
 - `UBUNTU_PASS`
 - `VPN_GW`
 - `LAB_SUBNET`
+- `LAN_NETWORK`
+- `LAN_GATEWAY`
+- `VPN_NETWORK`
+- `SNORT_TABLE`
 - `INCIDENTS_LOG`
+
+## Deployment Steps
+
+### 1. Prepare the Ubuntu host
+
+Run from the control machine:
+
+```bash
+cd automation
+ansible-playbook -i ansible/inventory.ini ansible/playbooks/01_setup_ubuntu_server.yml
+```
+
+What it does:
+
+- configures the internal Ubuntu server
+- enables the hardening baseline
+- prepares logging and service checks
+
+### 2. Review Snort on pfSense
+
+Run from the control machine:
+
+```bash
+cd automation
+ansible-playbook -i ansible/inventory.ini ansible/playbooks/02_setup_snort_ids.yml
+```
+
+What it does:
+
+- documents the Snort interface and rule flow
+- checks the pfSense-side IDS/IPS setup
+- keeps the lab notes aligned with the thesis
+
+### 3. Review firewall rules
+
+Run from the control machine:
+
+```bash
+cd automation
+ansible-playbook -i ansible/inventory.ini ansible/playbooks/03_firewall_rules.yml
+```
+
+What it does:
+
+- captures the WAN and LAN rule plan
+- keeps the block/allow policy consistent with the report
+
+### 4. Start the monitoring stack
+
+Run on the Ubuntu monitoring host:
+
+```bash
+cd automation/monitoring
+docker compose up -d
+```
+
+Expected containers:
+
+- `syslog-ng`
+- `Promtail`
+- `Loki`
+- `Grafana`
+- `soc`
+
+### 5. Run validation
+
+Run from the control machine or Kali host:
+
+```bash
+cd automation/scripts
+python3 test_all_layers.py
+python3 attack_simulation.py
+python3 auto_response.py
+```
+
+What to expect:
+
+- `test_all_layers.py` reports pass/fail by layer
+- `attack_simulation.py` triggers scan, brute-force, and flood scenarios
+- `auto_response.py` reads logs and can block source IPs on pfSense
+
+## Verification
+
+Verify these items after the deploy:
+
+- pfSense is reachable over SSH or WebGUI
+- the OpenVPN network uses `10.10.10.0/24`
+- Snort alerts appear in pfSense
+- Ubuntu services are active
+- Grafana shows incoming logs
+- incident records are written to `automation/scripts/incidents.log`
+
+## Troubleshooting
+
+- If `VPN_GW` does not ping, confirm the OpenVPN tunnel is established and the gateway IP is correct.
+- If Snort alerts are missing, locate the alert file on pfSense with:
+
+```bash
+find /var/log/snort -type f -name alert
+```
+
+- If IP blocking fails, confirm `PFSENSE_BLOCK_TABLE` matches the pfSense alias, for example `Blocked_IPs`.
+- If Ansible fails, verify the inventory IPs and the `.env` credentials.
+- If the monitoring stack is empty, check Docker container status and volume mounts on Ubuntu.
+
+## Notes
+
+- The default values are aligned with the thesis topology.
+- If your lab uses different IPs or aliases, update `.env` instead of editing the scripts.
+- The automation is designed for a lab environment, not production.

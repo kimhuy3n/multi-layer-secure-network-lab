@@ -21,7 +21,7 @@ load_env()
 TARGET_FW = env("TARGET_FW", "192.168.10.1")    # pfSense
 TARGET_SV = env("TARGET_SV", "192.168.10.101")  # Ubuntu Server
 TARGET_SSH_USER = env("TARGET_SSH_USER", "root")
-VPN_GW = env("VPN_GW", "10.10.0.1")
+VPN_GW = env("VPN_GW", "10.10.10.1")
 
 def banner():
     print("=" * 60)

@@ -24,7 +24,7 @@ PFSENSE_USER = env("PFSENSE_USER", "admin")
 PFSENSE_PASS = env("PFSENSE_PASS", "CHANGE_ME")
 FW_LOG = env("PFSENSE_FW_LOG", "/var/log/filter.log")
 SNORT_LOG = env("PFSENSE_SNORT_LOG", "/var/log/snort/alert")
-AUTO_BLOCK_TABLE = env("PFSENSE_BLOCK_TABLE", "auto_blocked")
+AUTO_BLOCK_TABLE = env("PFSENSE_BLOCK_TABLE", "Blocked_IPs")
 INCIDENTS_LOG = Path(env("INCIDENTS_LOG", str(SCRIPT_DIR / "incidents.log")))
 PORTSCAN_THRESHOLD = int(env("PORTSCAN_THRESHOLD", "10"))
 DOS_THRESHOLD = int(env("DOS_THRESHOLD", "500"))
@@ -33,7 +33,7 @@ WHITELIST = [
     ip.strip()
     for ip in env(
         "WHITELIST",
-        "192.168.10.1,192.168.10.101,192.168.10.102,10.10.0.1",
+        "192.168.10.1,192.168.10.101,192.168.10.102,10.10.10.1",
     ).split(",")
     if ip.strip()
 ]
